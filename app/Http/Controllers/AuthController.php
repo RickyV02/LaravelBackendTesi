@@ -8,7 +8,6 @@ use App\Models\Studente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash; 
 
-
 class AuthController extends BaseController
 {
     public function login(Request $request)
@@ -36,12 +35,14 @@ class AuthController extends BaseController
         $validatedData = $request->validate([
             'nome' => 'required|alpha',
             'cognome' => 'required|alpha',
-            'email' => 'required|email|unique:studente,email',
+            'email' => 'required|email|unique:studente,email|unique:professore,email', 
             'password' => 'required|min:8',
             'matricola' => 'required|numeric|unique:studente,matricola',
+        ], [
+            'email.unique' => 'Questa email è già in uso da un altro utente.',
+            'matricola.unique' => 'Questa matricola è già registrata.',
         ]);
 
-        
         Studente::create([
             'nome' => $validatedData['nome'],
             'cognome' => $validatedData['cognome'],
@@ -49,6 +50,7 @@ class AuthController extends BaseController
             'password' => Hash::make($validatedData['password']),
             'matricola' => $validatedData['matricola'],
         ]);
+
         return response()->json(['message' => 'Registrazione effettuata con successo'], 201); 
     }
 

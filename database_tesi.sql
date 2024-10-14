@@ -11,7 +11,7 @@ CREATE TABLE lezione(
 	id INT AUTO_INCREMENT PRIMARY KEY,
     ordine INT NOT NULL,
     data DATE NOT NULL,
-    link VARCHAR(255),
+    link JSON,
     argomento TEXT NOT NULL,
     corso_id INT NOT NULL,
     INDEX idx_corso (corso_id),

@@ -50,7 +50,7 @@ class DataRetrievalController extends BaseController
 
         Avvisi::create([
             'testo' => $validatedData['testoAvviso'],
-            'data_pubblicazione' => now()->toDateString(), // Inserisce la data odierna
+            'data_pubblicazione' => now()->toDateString(),
             'corso_id' => $validatedData['corso']
         ]);
     
