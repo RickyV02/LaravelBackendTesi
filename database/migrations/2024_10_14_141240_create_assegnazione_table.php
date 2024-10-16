@@ -10,9 +10,10 @@ class CreateAssegnazioneTable extends Migration
     {
         Schema::create('assegnazione', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('corso_id')->constrained('corso');
+            $table->foreignId('professore_id')->constrained('professore');
+            $table->foreignId('studente_id')->constrained('studente');
             $table->timestamps();
-            $table->foreign('corso_id')->references('id')->on('corso')->onDelete('cascade');
-            $table->foreign('studente_id')->references('id')->on('studente')->onDelete('cascade');
         });
     }
 

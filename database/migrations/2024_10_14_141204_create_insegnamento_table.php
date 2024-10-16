@@ -10,7 +10,9 @@ class CreateInsegnamentoTable extends Migration
     {
         Schema::create('insegnamento', function (Blueprint $table) {
             $table->id();
-            $table->primary(['professore_id', 'corso_id']);
+            $table->foreignId('corso_id')->constrained('corso')->onDelete('cascade');
+            $table->foreignId('professore_id')->constrained('professore')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

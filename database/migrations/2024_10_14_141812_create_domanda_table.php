@@ -13,7 +13,7 @@ class CreateDomandaTable extends Migration
             $table->text('testo');
             $table->integer('punteggio');
             $table->integer('ordine');
-            $table->foreign('progettazione_id')->references('id')->on('compito_progettazione')->nullable();
+            $table->foreignId('progettazione_id')->constrained('compito_progettazione')->onDelete('cascade');
             $table->timestamps();
         });
     }

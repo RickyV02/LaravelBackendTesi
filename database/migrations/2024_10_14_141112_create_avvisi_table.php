@@ -12,7 +12,7 @@ class CreateAvvisiTable extends Migration
             $table->id();
             $table->text('testo');
             $table->date('data_pubblicazione');
-            $table->foreign('corso_id')->references('id')->on('corso');
+            $table->foreignId('corso_id')->constrained('corso')->onDelete('cascade');
             $table->timestamps();
         });
     }

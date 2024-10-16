@@ -10,10 +10,9 @@ class CreateValutazioneQueryTable extends Migration
     {
         Schema::create('valutazione_query', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('query_id')->constrained('query')->onDelete('cascade');
+            $table->foreignId('valutazione_id')->constrained('valutazione')->onDelete('cascade');
             $table->integer('esito');
-            $table->timestamps();
-            $table->foreign('query_id')->references('id')->on('query')->nullable();
-            $table->foreign('valutazione_id')->references('id')->on('valutazione')->nullable();
         });
     }
 

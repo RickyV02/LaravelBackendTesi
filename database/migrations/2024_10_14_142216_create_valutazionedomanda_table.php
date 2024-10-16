@@ -10,10 +10,9 @@ class CreateValutazioneDomandaTable extends Migration
     {
         Schema::create('valutazione_domanda', function (Blueprint $table) {
             $table->id();
-            $table->foreign('progettazione_id')->references('id')->on('compito_progettazione')->nullable();
-            $table->foreign('valutazione_id')->references('id')->on('valutazione')->nullable();
+            $table->foreignId('progettazione_id')->constrained('domanda')->onDelete('cascade');
+            $table->foreignId('valutazione_id')->constrained('valutazione')->onDelete('cascade');
             $table->integer('esito');
-            $table->timestamps();
         });
     }
 

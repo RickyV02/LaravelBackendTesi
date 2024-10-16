@@ -1,4 +1,4 @@
-<?php   
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -13,7 +13,7 @@ class CreateQueryTable extends Migration
             $table->text('testo');
             $table->integer('punteggio');
             $table->integer('ordine');
-            $table->foreign('sql_id')->references('id')->on('compito_sql')->nullable();
+            $table->foreignId('sql_id')->constrained('compito_sql')->onDelete('cascade');
             $table->timestamps();
         });
     }

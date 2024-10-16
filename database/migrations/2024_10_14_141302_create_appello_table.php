@@ -11,7 +11,7 @@ class CreateAppelloTable extends Migration
         Schema::create('appello', function (Blueprint $table) {
             $table->id();
             $table->date('data');
-            $table->foreign('id')->references('id')->on('corso');
+            $table->foreignId('corso_id')->constrained('corso');
             $table->timestamps();
         });
     }

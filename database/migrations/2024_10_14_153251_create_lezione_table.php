@@ -12,9 +12,9 @@ class CreateLezioneTable extends Migration
             $table->id();
             $table->integer('ordine');
             $table->date('data');
-            $table->json('links'); 
+            $table->json('link')->nullable();
             $table->text('argomento');
-            $table->foreign('corso_id')->references('id')->on('corso');
+            $table->foreignId('corso_id')->constrained('corso')->onDelete('cascade');
             $table->timestamps();
         });
     }

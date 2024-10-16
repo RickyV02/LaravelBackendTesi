@@ -1,5 +1,7 @@
 <?php
+
 namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -12,10 +14,10 @@ class LezioneSeeder extends Seeder
                 'ordine' => 1,
                 'data' => '2023-10-02',
                 'argomento' => 'Introduzione Corso',
-                'corso_id' => 1, 
+                'corso_id' => 1,
                 'link' => json_encode([
                     'https://drive.google.com/file/d/1KtSaHITI6GnDuYwRCe-DF-SoIapIVNci/view?usp=sharing'
-                ]), 
+                ]),
             ],
             [
                 'ordine' => 2,
@@ -24,7 +26,7 @@ class LezioneSeeder extends Seeder
                 'corso_id' => 1,
                 'link' => json_encode([
                     'https://drive.google.com/file/d/15EaCh1d7VxnKTfylcErryjHwbERGk1Qo/view?usp=sharing'
-                ]), 
+                ]),
             ],
             [
                 'ordine' => 3,
@@ -34,7 +36,7 @@ class LezioneSeeder extends Seeder
                 'link' => json_encode([
                     'https://drive.google.com/file/d/15EaCh1d7VxnKTfylcErryjHwbERGk1Qo/view?usp=sharing',
                     'https://drive.google.com/file/d/1xhLANQBfE-IPZenv5l__r-LpDB_vGVbi/view?usp=sharing'
-                ]), 
+                ]),
             ],
             [
                 'ordine' => 4,
@@ -43,7 +45,7 @@ class LezioneSeeder extends Seeder
                 'corso_id' => 1,
                 'link' => json_encode([
                     'https://drive.google.com/file/d/1jGRLpZON_ydNYmKO80tpAFVwFnf0xMPU/view?usp=drive_link'
-                ]), 
+                ]),
             ],
             [
                 'ordine' => 5,
@@ -118,7 +120,7 @@ class LezioneSeeder extends Seeder
                 'data' => '2023-11-08',
                 'argomento' => 'Esercitazione Complessiva SQL - 2',
                 'corso_id' => 1,
-               'link' => json_encode([
+                'link' => json_encode([
                     'https://drive.google.com/file/d/1WPOVOcOZfmL2bCSfOmE3OY0plZihMW4a/view?usp=sharing',
                     'https://drive.google.com/file/d/1kL5wH4UwKUIlBE-qP2eeDdKiYSfla0zg/view?usp=sharing',
                     'https://drive.google.com/file/d/1mWzBK8Ze0ExTDEkNfzd3d7Q6j5zTwVI9/view?usp=sharing'
@@ -144,7 +146,6 @@ class LezioneSeeder extends Seeder
                     'https://drive.google.com/file/d/1bumTEK2c8FPxLR13vt1b4YN0CYs2eGqG/view?usp=sharing',
                     'https://drive.google.com/file/d/1Zqa9cG7AU2IWQW-qrpkerJSD9imdf0Y9/view?usp=sharing'
                 ]),
-                ''
             ],
             [
                 'ordine' => 15,

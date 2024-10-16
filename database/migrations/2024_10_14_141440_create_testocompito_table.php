@@ -10,8 +10,8 @@ class CreateTestoCompitoTable extends Migration
     {
         Schema::create('testo_compito', function (Blueprint $table) {
             $table->id();
-            $table->foreign('studente_id')->references('id')->on('studente')->onDelete('cascade');
-            $table->foreign('progettazione_id')->references('id')->on('compito_progettazione')->nullable();
+            $table->foreignId('sql_id')->nullable()->constrained('compito_sql')->onDelete('cascade');
+            $table->foreignId('progettazione_id')->nullable()->constrained('compito_progettazione')->onDelete('cascade');
             $table->timestamps();
         });
     }
