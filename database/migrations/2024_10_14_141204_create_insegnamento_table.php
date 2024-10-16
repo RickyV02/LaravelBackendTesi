@@ -12,7 +12,6 @@ class CreateInsegnamentoTable extends Migration
             $table->id();
             $table->foreignId('corso_id')->constrained('corso')->onDelete('cascade');
             $table->foreignId('professore_id')->constrained('professore')->onDelete('cascade');
-
             $table->timestamps();
         });
     }
