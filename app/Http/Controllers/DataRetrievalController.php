@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Corso;
 use App\Models\Avvisi;
 use App\Models\Lezione;
+use App\Models\Assegnazione; 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Log;
 
@@ -73,4 +74,52 @@ class DataRetrievalController extends BaseController
         return response()->json($avvisi, 200);
     }
 
+    public function iscriviStudente(Request $request)
+    {
+        $validatedData = $request->validate([
+            'studente_id' => 'required|exists:studente,id',
+            'corso_id' => 'required|exists:corso,id',
+        ]);
+
+        Assegnazione::create([
+            'studente_id' => $validatedData['studente_id'],
+            'corso_id' => $validatedData['corso_id'],
+        ]);
+
+        return response()->json(['message' => 'Iscrizione al corso avvenuta con successo!'], 201);
+    }
+
+    public function cancellaIscrizione(Request $request)
+    {
+        $validatedData = $request->validate([
+            'studente_id' => 'required|exists:studente,id',
+            'corso_id' => 'required|exists:corso,id',
+        ]);
+
+        $assegnazione = Assegnazione::where('studente_id', $validatedData['studente_id'])
+            ->where('corso_id', $validatedData['corso_id'])
+            ->first();
+
+        if ($assegnazione) {
+            $assegnazione->delete();
+            return response()->json(['message' => 'Iscrizione cancellata con successo!'], 200);
+        } else {
+            return response()->json(['message' => 'Iscrizione non trovata'], 404);
+        }
+    }
+    public function checkIscrizione($studente_id)
+    {
+        $assegnazione = Assegnazione::where('studente_id', $studente_id)->first();
+    
+        if ($assegnazione) {
+            $corso = Corso::find($assegnazione->corso_id);
+    
+            return response()->json([
+                'is_iscritto' => true,
+                'corso' => $corso
+            ]);
+        }
+    
+        return response()->json(['is_iscritto' => false]);
+    }
 }

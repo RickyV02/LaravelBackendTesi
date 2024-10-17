@@ -13,7 +13,11 @@ class CorsoSeeder extends Seeder
 
         if (!$corsoEsistente) {
             DB::table('corso')->insert([
-                'canale' => 'Informatica', 
+                'canale' => 'A-L', 
+                'anno' => $annoAccademico,
+            ]);
+            DB::table('corso')->insert([
+                'canale' => 'M-Z', 
                 'anno' => $annoAccademico,
             ]);
         }
