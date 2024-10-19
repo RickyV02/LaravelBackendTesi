@@ -14,8 +14,10 @@ class CreateLezioneTable extends Migration
             $table->date('data');
             $table->json('link')->nullable();
             $table->text('argomento');
+            $table->string('canale');
             $table->foreignId('corso_id')->constrained('corso')->onDelete('cascade');
             $table->timestamps();
+
         });
     }
 
