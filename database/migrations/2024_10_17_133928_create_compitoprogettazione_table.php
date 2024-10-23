@@ -10,6 +10,8 @@ class CreateCompitoProgettazioneTable extends Migration
     {
         Schema::create('compito_progettazione', function (Blueprint $table) {
             $table->id();
+            $table->integer('voto');
+            $table->binary('pdf')->nullable();
             $table->timestamps();
         });
     }

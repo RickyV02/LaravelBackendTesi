@@ -15,11 +15,13 @@ class Studente extends Model
         'password',
         'matricola',
     ];
-    public function corsi(){
+    public function corsi()
+    {
         return $this->belongsToMany(Corso::class, 'assegnazione', 'studente_id', 'corso_id');
     }
 
-    public function valutazioni(){
-        return $this->hasMany(Valutazione::class, 'studente_id');
+    public function prenotazioni()
+    {
+        return $this->hasMany(Prenotazione::class, 'studente_id');
     }
 }

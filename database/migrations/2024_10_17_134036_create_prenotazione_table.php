@@ -4,11 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateValutazioneTable extends Migration
+class CreatePrenotazioneTable extends Migration
 {
     public function up()
     {
-        Schema::create('valutazione', function (Blueprint $table) {
+        Schema::create('prenotazione', function (Blueprint $table) {
             $table->id();
             $table->integer('esito');
             $table->foreignId('studente_id')->constrained('studente')->onDelete('cascade');

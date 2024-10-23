@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\Corso;
 use App\Models\Avvisi;
 use App\Models\Lezione;
-use App\Models\Assegnazione; 
+use App\Models\Assegnazione;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class DataRetrievalController extends BaseController
 {
@@ -21,32 +23,32 @@ class DataRetrievalController extends BaseController
     }
 
     public function nuovaLezione(Request $request)
-{
-    $validatedData = $request->validate([
-        'ordine' => 'required|numeric',
-        'data' => 'required|date',
-        'link' => 'required|array', 
-        'argomento' => 'required',
-        'canale' => 'required|string',
-        'corso_id' => 'required', 
-    ]);
+    {
+        Log::info($request->all());
+        $validatedData = $request->validate([
+            'ordine' => 'required|numeric',
+            'data' => 'required|date',
+            'link' => 'required|array',
+            'argomento' => 'required',
+            'canale' => 'required|string',
+            'corso_id' => 'required',
+        ]);
 
-    $date = new \DateTime($validatedData['data']);
-    $formattedDate = $date->format('Y-m-d');
+        $formattedDate = Carbon::parse($validatedData['data'])->format('Y-m-d');
 
-    Lezione::create([
-        'ordine' => $validatedData['ordine'],
-        'data' => $formattedDate,
-        'link' => json_encode($validatedData['link']),
-        'argomento' => $validatedData['argomento'],
-        'canale' => $validatedData['canale'],   
-        'corso_id' => $validatedData['corso_id'],
-    ]);
-    
-    return response()->json(['message' => 'Lezione creata con successo!'], 201);
-}
+        Lezione::create([
+            'ordine' => $validatedData['ordine'],
+            'data' => $formattedDate,
+            'link' => json_encode($validatedData['link']),
+            'argomento' => $validatedData['argomento'],
+            'canale' => $validatedData['canale'],
+            'corso_id' => $validatedData['corso_id'],
+        ]);
 
-    
+        return response()->json(['message' => 'Lezione creata con successo!'], 201);
+    }
+
+
 
     public function nuovoAvviso(Request $request)
     {
@@ -62,6 +64,21 @@ class DataRetrievalController extends BaseController
         ]);
 
         return response()->json(['message' => 'Avviso creato con successo!'], 201);
+    }
+
+    public function nuovoCorso(Request $request)
+    {
+        $validatedData = $request->validate([
+            'canale' => 'required|string|max:50',
+            'anno' => 'required|date_format:Y',
+        ]);
+
+        $corso = Corso::create([
+            'canale' => $validatedData['canale'],
+            'anno' => $validatedData['anno']
+        ]);
+
+        return response()->json(['message' => 'Corso creato con successo!'], 201);
     }
 
     public function fetchLessons()
@@ -119,16 +136,16 @@ class DataRetrievalController extends BaseController
     public function checkIscrizione($studente_id)
     {
         $assegnazione = Assegnazione::where('studente_id', $studente_id)->first();
-    
+
         if ($assegnazione) {
             $corso = Corso::find($assegnazione->corso_id);
-    
+
             return response()->json([
                 'is_iscritto' => true,
                 'corso' => $corso
             ]);
         }
-    
+
         return response()->json(['is_iscritto' => false]);
     }
 }

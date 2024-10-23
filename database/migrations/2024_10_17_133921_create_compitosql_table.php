@@ -10,8 +10,8 @@ class CreateCompitoSqlTable extends Migration
     {
         Schema::create('compito_sql', function (Blueprint $table) {
             $table->id();
-            $table->text('schema_compito');
-            $table->text('dati');
+            $table->integer('voto');
+            $table->binary('pdf')->nullable();
             $table->timestamps();
         });
     }
