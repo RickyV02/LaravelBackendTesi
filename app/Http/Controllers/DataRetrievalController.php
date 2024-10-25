@@ -7,6 +7,8 @@ use App\Models\Corso;
 use App\Models\Avvisi;
 use App\Models\Lezione;
 use App\Models\Assegnazione;
+use App\Models\Appello;
+use App\Models\Prenotazione;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -73,7 +75,7 @@ class DataRetrievalController extends BaseController
             'anno' => 'required|date_format:Y',
         ]);
 
-        $corso = Corso::create([
+        Corso::create([
             'canale' => $validatedData['canale'],
             'anno' => $validatedData['anno']
         ]);
@@ -147,5 +149,33 @@ class DataRetrievalController extends BaseController
         }
 
         return response()->json(['is_iscritto' => false]);
+    }
+    public function nuovoAppello(Request $request)
+    {
+        $validatedData = $request->validate([
+            'data' => 'required|date',
+            'corso_id' => 'required|exists:corso,id',
+        ]);
+
+        $validatedData['data'] = Carbon::parse($validatedData['data'])->format('Y-m-d H:i:s');
+
+        Appello::create($validatedData);
+
+        return response()->json(['success' => true, 'message' => 'Appello aggiunto con successo']);
+    }
+
+    public function fetchAppelli($corso_id)
+    {
+        $appelli = Appello::where('corso_id', $corso_id)->get();
+
+        if ($appelli->isEmpty()) {
+            return response()->json(['message' => 'Nessun appello disponibile per questo corso'], 404);
+        }
+        $appelli = $appelli->map(function ($appello) {
+            $appello->data = Carbon::parse($appello->data)->format('Y-m-d');
+            return $appello;
+        });
+
+        return response()->json($appelli, 200);
     }
 }

@@ -8,12 +8,15 @@ class Appello extends Model
 {
     protected $table = 'appello';
     public $timestamps = false;
-    
-    public function corso(){
+    protected $fillable = ['data', 'corso_id'];
+
+    public function corso()
+    {
         return $this->belongsTo(Corso::class, 'corso_id');
     }
 
-    public function valutazioni(){
-        return $this->hasMany(Valutazione::class, 'appello_id');
+    public function prenotazione()
+    {
+        return $this->hasMany(Prenotazione::class, 'appello_id');
     }
 }

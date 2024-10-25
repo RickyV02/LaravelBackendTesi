@@ -20,3 +20,5 @@ Route::post('/nuovoCorso', [DataRetrievalController::class, 'nuovoCorso']);
 Route::post('/iscrizioneCorso', [DataRetrievalController::class, 'iscriviStudente']);
 Route::post('/cancellazioneCorso', [DataRetrievalController::class, 'cancellaIscrizione']);
 Route::get('/iscrizione/{studente_id}', [DataRetrievalController::class, 'checkIscrizione']);
+Route::get('/fetchAppelli/{corso_id}', [DataRetrievalController::class, 'fetchAppelli']);
+Route::post('/nuovoAppello', [DataRetrievalController::class, 'nuovoAppello']);
