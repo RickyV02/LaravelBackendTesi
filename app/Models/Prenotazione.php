@@ -8,6 +8,12 @@ class Prenotazione extends Model
 {
     protected $table = 'prenotazione';
     public $timestamps = false;
+    public $fillable = [
+        'esito',
+        'studente_id',
+        'appello_id',
+        'compito_id'
+    ];
 
     public function studente()
     {

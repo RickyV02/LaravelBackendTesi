@@ -164,18 +164,61 @@ class DataRetrievalController extends BaseController
         return response()->json(['success' => true, 'message' => 'Appello aggiunto con successo']);
     }
 
-    public function fetchAppelli($corso_id)
+    public function fetchAppelli($corsoId)
     {
-        $appelli = Appello::where('corso_id', $corso_id)->get();
+        $appelli = Appello::where('corso_id', $corsoId)->orderBy('data', 'asc')->get();
 
-        if ($appelli->isEmpty()) {
-            return response()->json(['message' => 'Nessun appello disponibile per questo corso'], 404);
+        return response()->json($appelli);
+    }
+    public function fetchPrenotazioni($studenteId)
+    {
+        $prenotazioni = Prenotazione::where('studente_id', $studenteId)
+            ->with('appello')
+            ->get();
+
+        return response()->json($prenotazioni);
+    }
+
+    public function prenotaAppello(Request $request)
+    {
+        $request->validate([
+            'studente_id' => 'required|exists:studente,id',
+            'appello_id' => 'required|exists:appello,id',
+        ]);
+
+        $studenteId = $request->input('studente_id');
+        $appelloId = $request->input('appello_id');
+
+        $esistePrenotazione = Prenotazione::where('studente_id', $studenteId)
+            ->where('appello_id', $appelloId)
+            ->exists();
+
+        if (!$esistePrenotazione) {
+            $prenotazione = Prenotazione::create([
+                'studente_id' => $studenteId,
+                'appello_id' => $appelloId,
+                'compito_id' => null,
+                'esito' => null,
+            ]);
+
+            return response()->json(['success' => 'Prenotazione effettuata.', 'prenotazione' => $prenotazione], 201);
+        } else
+            return response()->json(['error' => 'Prenotazione già effettuata.', 'prenotazione' => $esistePrenotazione], 201);
+    }
+
+    public function rimuoviPrenotazione(Request $request)
+    {
+        $studenteId = $request->input('studente_id');
+        $appelloId = $request->input('appello_id');
+        $prenotazione = Prenotazione::where('studente_id', $studenteId)
+            ->where('appello_id', $appelloId)
+            ->first();
+
+        if ($prenotazione) {
+            $prenotazione->delete();
+            return response()->json(['message' => 'Prenotazione rimossa con successo.'], 200);
         }
-        $appelli = $appelli->map(function ($appello) {
-            $appello->data = Carbon::parse($appello->data)->format('Y-m-d');
-            return $appello;
-        });
 
-        return response()->json($appelli, 200);
+        return response()->json(['message' => 'Prenotazione non trovata.'], 404);
     }
 }

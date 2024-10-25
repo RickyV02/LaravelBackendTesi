@@ -10,10 +10,10 @@ class CreatePrenotazioneTable extends Migration
     {
         Schema::create('prenotazione', function (Blueprint $table) {
             $table->id();
-            $table->integer('esito');
+            $table->integer('esito')->nullable();
             $table->foreignId('studente_id')->constrained('studente')->onDelete('cascade');
             $table->foreignId('appello_id')->constrained('appello')->onDelete('cascade');
-            $table->foreignId('compito_id')->constrained('testo_compito')->onDelete('cascade');
+            $table->foreignId('compito_id')->constrained('testo_compito')->onDelete('cascade')->nullable();
             $table->timestamps();
         });
     }
