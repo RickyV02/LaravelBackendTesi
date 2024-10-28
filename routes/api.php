@@ -25,3 +25,9 @@ Route::get('/fetchPrenotazioni/{studenteId}', [DataRetrievalController::class, '
 Route::post('/nuovoAppello', [DataRetrievalController::class, 'nuovoAppello']);
 Route::post('/rimuoviPrenotazione', [DataRetrievalController::class, 'rimuoviPrenotazione']);
 Route::post('/prenotaAppello', [DataRetrievalController::class, 'prenotaAppello']);
+Route::get('/fetchAllAppelli', [DataRetrievalController::class, 'fetchAllAppelli']);
+Route::post('/modificaAppello', [DataRetrievalController::class, 'updateDateAppello']);
+Route::post('/eliminaAppello', [DataRetrievalController::class, 'deleteAppello']);
+Route::post('/prenotati', [DataRetrievalController::class, 'getPrenotati']);
+Route::post('/carica-esame-sql', [DataRetrievalController::class, 'caricaEsameSQL']);
+Route::post('/carica-esame-erm', [DataRetrievalController::class, 'caricaEsameERM']);

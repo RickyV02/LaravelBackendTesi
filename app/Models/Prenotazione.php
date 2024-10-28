@@ -2,31 +2,28 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Prenotazione extends Model
 {
+    use HasFactory;
+
     protected $table = 'prenotazione';
-    public $timestamps = false;
-    public $fillable = [
+
+    protected $fillable = [
         'esito',
         'studente_id',
         'appello_id',
-        'compito_id'
     ];
 
     public function studente()
     {
-        return $this->belongsTo(Studente::class, 'studente_id');
+        return $this->belongsTo(Studente::class);
     }
 
     public function appello()
     {
-        return $this->belongsTo(Appello::class, 'appello_id');
-    }
-
-    public function testoCompito()
-    {
-        return $this->belongsTo(TestoCompito::class, 'compito_id');
+        return $this->belongsTo(Appello::class);
     }
 }

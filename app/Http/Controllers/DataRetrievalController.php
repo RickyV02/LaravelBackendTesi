@@ -9,6 +9,10 @@ use App\Models\Lezione;
 use App\Models\Assegnazione;
 use App\Models\Appello;
 use App\Models\Prenotazione;
+use App\Models\TestoCompito;
+use App\Models\CompitoProgettazione;
+use App\Models\CompitoSQL;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -150,6 +154,44 @@ class DataRetrievalController extends BaseController
 
         return response()->json(['is_iscritto' => false]);
     }
+    public function caricaEsameSQL(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:sql',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+        $filePath = $request->file('file')->store('esami_sql');
+        $compitoSQL = CompitoSQL::create([
+            'file_path' => $filePath,
+            'voto' => null,
+        ]);
+
+        return response()->json(['message' => 'Esame SQL caricato con successo.', 'compito_id' => $compitoSQL->id], 200);
+    }
+
+    public function caricaEsameERM(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:erm',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $filePath = $request->file('file')->store('esami_erm');
+
+        $compitoProgettazione = CompitoProgettazione::create([
+            'file_path' => $filePath,
+            'voto' => null,
+        ]);
+
+        return response()->json(['message' => 'Esame ERM caricato con successo.', 'compito_id' => $compitoProgettazione->id], 200);
+    }
+
     public function nuovoAppello(Request $request)
     {
         $validatedData = $request->validate([
@@ -159,9 +201,13 @@ class DataRetrievalController extends BaseController
 
         $validatedData['data'] = Carbon::parse($validatedData['data'])->format('Y-m-d H:i:s');
 
-        Appello::create($validatedData);
+        $appello = Appello::create($validatedData);
 
-        return response()->json(['success' => true, 'message' => 'Appello aggiunto con successo']);
+        $testoCompito = TestoCompito::firstOrCreate([
+            'appello_id' => $appello->id,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Appello aggiunto con successo', 'testo_compito_id' => $testoCompito->id]);
     }
 
     public function fetchAppelli($corsoId)
@@ -170,6 +216,46 @@ class DataRetrievalController extends BaseController
 
         return response()->json($appelli);
     }
+
+    public function fetchAllAppelli()
+    {
+        $appelli = Appello::with('corso:id,canale')
+            ->orderBy('data', 'asc')
+            ->get();
+
+        return response()->json($appelli);
+    }
+
+    public function updateDateAppello(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'data' => 'required|date',
+        ]);
+
+        $appello = Appello::find($request->input('id'));
+
+        $data = Carbon::parse($request->input('data'));
+
+        $appello->data = $data->format('Y-m-d H:i:s');
+        $appello->save();
+
+        return response()->json(['message' => 'Data appello aggiornata con successo'], 200);
+    }
+
+    public function deleteAppello(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+        ]);
+
+        $appello = Appello::find($request->input('id'));
+        $appello->delete();
+
+        return response()->json(['message' => 'Appello eliminato con successo'], 200);
+    }
+
+
     public function fetchPrenotazioni($studenteId)
     {
         $prenotazioni = Prenotazione::where('studente_id', $studenteId)
@@ -177,6 +263,18 @@ class DataRetrievalController extends BaseController
             ->get();
 
         return response()->json($prenotazioni);
+    }
+
+    public function getPrenotati(Request $request)
+    {
+        $request->validate([
+            'appello_id' => 'required|integer|exists:appello,id',
+        ]);
+        $appelloId = $request->input('appello_id');
+        $prenotati = Prenotazione::where('appello_id', $appelloId)
+            ->with('studente')
+            ->get();
+        return response()->json($prenotati, 200);
     }
 
     public function prenotaAppello(Request $request)
@@ -197,7 +295,6 @@ class DataRetrievalController extends BaseController
             $prenotazione = Prenotazione::create([
                 'studente_id' => $studenteId,
                 'appello_id' => $appelloId,
-                'compito_id' => null,
                 'esito' => null,
             ]);
 

@@ -12,6 +12,7 @@ class CreateAppelloTable extends Migration
             $table->id();
             $table->date('data');
             $table->foreignId('corso_id')->constrained('corso');
+            $table->foreignId('compito_id')->nullable()->constrained('testo_compito')->onDelete('cascade');
             $table->timestamps();
         });
     }
