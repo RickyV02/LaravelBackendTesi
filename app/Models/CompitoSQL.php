@@ -8,6 +8,10 @@ class CompitoSQL extends Model
 {
     protected $table = 'compito_sql';
     public $timestamps = false;
+    public $fillable = [
+        'voto',
+        'pdf'
+    ];
 
     public function testoCompito()
     {

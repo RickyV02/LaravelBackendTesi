@@ -18,11 +18,11 @@ class TestoCompito extends Model
 
     public function compitoSql()
     {
-        return $this->belongsTo(CompitoSql::class, 'sql_id');
+        return $this->hasOne(CompitoSql::class, 'sql_id');
     }
 
     public function compitoProgettazione()
     {
-        return $this->belongsTo(CompitoProgettazione::class, 'progettazione_id');
+        return $this->hasOne(CompitoProgettazione::class, 'progettazione_id');
     }
 }

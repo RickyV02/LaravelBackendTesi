@@ -15,6 +15,7 @@ class Appello extends Model
         'data',
         'corso_id',
         'compito_id',
+        'iniziato'
     ];
 
     public function corso()
@@ -24,6 +25,6 @@ class Appello extends Model
 
     public function compito()
     {
-        return $this->belongsTo(TestoCompito::class);
+        return $this->hasOne(TestoCompito::class);
     }
 }

@@ -26,3 +26,4 @@ class Assegnazione extends Model
         return $this->belongsTo(Studente::class, 'studente_id');
     }
 }
+

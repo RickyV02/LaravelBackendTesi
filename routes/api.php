@@ -29,5 +29,5 @@ Route::get('/fetchAllAppelli', [DataRetrievalController::class, 'fetchAllAppelli
 Route::post('/modificaAppello', [DataRetrievalController::class, 'updateDateAppello']);
 Route::post('/eliminaAppello', [DataRetrievalController::class, 'deleteAppello']);
 Route::post('/prenotati', [DataRetrievalController::class, 'getPrenotati']);
-Route::post('/carica-esame-sql', [DataRetrievalController::class, 'caricaEsameSQL']);
-Route::post('/carica-esame-erm', [DataRetrievalController::class, 'caricaEsameERM']);
+Route::post('/invia-Esame', [DataRetrievalController::class, 'inviaEsame']);
+Route::get('/download/{appelloId}/{type}', [DataRetrievalController::class, 'downloadFile']);

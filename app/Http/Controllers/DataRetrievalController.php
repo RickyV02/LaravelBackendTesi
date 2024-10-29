@@ -154,60 +154,73 @@ class DataRetrievalController extends BaseController
 
         return response()->json(['is_iscritto' => false]);
     }
-    public function caricaEsameSQL(Request $request)
+    public function inviaEsame(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|file|mimes:sql',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
-        }
-        $filePath = $request->file('file')->store('esami_sql');
-        $compitoSQL = CompitoSQL::create([
-            'file_path' => $filePath,
-            'voto' => null,
-        ]);
-
-        return response()->json(['message' => 'Esame SQL caricato con successo.', 'compito_id' => $compitoSQL->id], 200);
-    }
-
-    public function caricaEsameERM(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'file' => 'required|file|mimes:erm',
+            'fileSQL' => 'nullable|file|mimes:pdf',
+            'fileERM' => 'nullable|file|mimes:pdf',
+            'compitoId' => 'required|integer',
+            'appelloId' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        $filePath = $request->file('file')->store('esami_erm');
+        $testoCompito = TestoCompito::where('sql_id', $request->input('compitoId'))
+            ->orWhere('progettazione_id', $request->input('compitoId'))
+            ->first();
 
-        $compitoProgettazione = CompitoProgettazione::create([
-            'file_path' => $filePath,
-            'voto' => null,
-        ]);
+        if (!$testoCompito) {
+            return response()->json(['error' => 'Compito non trovato.'], 404);
+        }
 
-        return response()->json(['message' => 'Esame ERM caricato con successo.', 'compito_id' => $compitoProgettazione->id], 200);
+        $appello = Appello::find($request->input('appelloId'));
+        if ($appello) {
+            $appello->update(['iniziato' => true]);
+        }
+
+        if ($request->hasFile('fileSQL')) {
+            $fileContentSQL = file_get_contents($request->file('fileSQL')->getRealPath());
+            $compitoSQL = CompitoSQL::find($testoCompito->sql_id);
+            if ($compitoSQL) {
+                $compitoSQL->update(['pdf' => $fileContentSQL]);
+            }
+        }
+        if ($request->hasFile('fileERM')) {
+            $fileContentERM = file_get_contents($request->file('fileERM')->getRealPath());
+            $compitoProgettazione = CompitoProgettazione::find($testoCompito->progettazione_id);
+            if ($compitoProgettazione) {
+                $compitoProgettazione->update(['pdf' => $fileContentERM]);
+            }
+        }
+
+        return response()->json(['message' => 'Esami inviati con successo.'], 200);
     }
-
     public function nuovoAppello(Request $request)
     {
         $validatedData = $request->validate([
             'data' => 'required|date',
             'corso_id' => 'required|exists:corso,id',
         ]);
-
         $validatedData['data'] = Carbon::parse($validatedData['data'])->format('Y-m-d H:i:s');
-
         $appello = Appello::create($validatedData);
 
+        $compitoSQL = CompitoSQL::create(['voto' => null]);
+        $compitoProgettazione = CompitoProgettazione::create(['voto' => null]);
+
         $testoCompito = TestoCompito::firstOrCreate([
-            'appello_id' => $appello->id,
+            'sql_id' => $compitoSQL->id,
+            'progettazione_id' => $compitoProgettazione->id,
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Appello aggiunto con successo', 'testo_compito_id' => $testoCompito->id]);
+        $appello->update(['compito_id' => $testoCompito->id]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appello aggiunto con successo',
+            'testo_compito_id' => $testoCompito->id
+        ]);
     }
 
     public function fetchAppelli($corsoId)
@@ -248,13 +261,36 @@ class DataRetrievalController extends BaseController
         $request->validate([
             'id' => 'required|integer',
         ]);
-
         $appello = Appello::find($request->input('id'));
-        $appello->delete();
 
-        return response()->json(['message' => 'Appello eliminato con successo'], 200);
+        if ($appello) {
+            if ($appello->compito_id) {
+                $testoCompito = TestoCompito::find($appello->compito_id);
+                if ($testoCompito) {
+                    if ($testoCompito->sql_id) {
+                        $compitoSql = CompitoSql::find($testoCompito->sql_id);
+                        if ($compitoSql) {
+                            $compitoSql->delete();
+                        }
+                    }
+
+                    if ($testoCompito->progettazione_id) {
+                        $compitoProgettazione = CompitoProgettazione::find($testoCompito->progettazione_id);
+                        if ($compitoProgettazione) {
+                            $compitoProgettazione->delete();
+                        }
+                    }
+
+                    $testoCompito->delete();
+                }
+            }
+
+            $appello->delete();
+            return response()->json(['message' => 'Appello e compiti associati eliminati con successo'], 200);
+        }
+
+        return response()->json(['message' => 'Appello non trovato'], 404);
     }
-
 
     public function fetchPrenotazioni($studenteId)
     {
@@ -317,5 +353,45 @@ class DataRetrievalController extends BaseController
         }
 
         return response()->json(['message' => 'Prenotazione non trovata.'], 404);
+    }
+
+    public function downloadFile($appelloId, $type)
+    {
+        // Trova l'appello in base all'ID fornito
+        $appello = Appello::find($appelloId);
+
+        if (!$appello) {
+            return response()->json(['error' => 'Appello non trovato.'], 404);
+        }
+
+        $fileContent = null;
+        $fileName = '';
+
+        // Determina quale tipo di file stai cercando di scaricare
+        if ($type === 'SQL') {
+            $compitoSQL = CompitoSQL::find($appello->compito_id);
+            if ($compitoSQL) {
+                $fileContent = $compitoSQL->pdf; // Contenuto binario del file
+                $fileName = 'esame_sql.pdf'; // Nome del file per il download
+            }
+        } elseif ($type === 'ERM') {
+            $compitoProgettazione = CompitoProgettazione::find($appello->compito_id);
+            if ($compitoProgettazione) {
+                $fileContent = $compitoProgettazione->pdf; // Contenuto binario del file
+                $fileName = 'esame_erm.pdf'; // Nome del file per il download
+            }
+        }
+
+        // Se il contenuto del file è impostato, gestisci il download
+        if ($fileContent) {
+            return response()->stream(function () use ($fileContent) {
+                echo $fileContent; // Assicurati che fileContent sia binario e non venga convertito in stringa
+            }, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            ]);
+        }
+
+        return response()->json(['error' => 'File non trovato.'], 404);
     }
 }

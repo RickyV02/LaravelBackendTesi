@@ -18,7 +18,7 @@ class Insegnamento extends Model
 
     public function professore()
     {
-        return $this->belongsTo(Professore::class, 'professore_id');
+        return $this->belongsToMany(Professore::class, 'professore_id');
     }
 
     public function corso()
