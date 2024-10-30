@@ -206,8 +206,8 @@ class DataRetrievalController extends BaseController
         $validatedData['data'] = Carbon::parse($validatedData['data'])->format('Y-m-d H:i:s');
         $appello = Appello::create($validatedData);
 
-        $compitoSQL = CompitoSQL::create(['voto' => null]);
-        $compitoProgettazione = CompitoProgettazione::create(['voto' => null]);
+        $compitoSQL = CompitoSQL::create();
+        $compitoProgettazione = CompitoProgettazione::create();
 
         $testoCompito = TestoCompito::firstOrCreate([
             'sql_id' => $compitoSQL->id,
@@ -296,7 +296,8 @@ class DataRetrievalController extends BaseController
     {
         $prenotazioni = Prenotazione::where('studente_id', $studenteId)
             ->with('appello')
-            ->get();
+            ->get()
+            ->makeHidden(['sql_file', 'erm_pdf']);
 
         return response()->json($prenotazioni);
     }
@@ -309,9 +310,12 @@ class DataRetrievalController extends BaseController
         $appelloId = $request->input('appello_id');
         $prenotati = Prenotazione::where('appello_id', $appelloId)
             ->with('studente')
-            ->get();
+            ->get()
+            ->makeHidden(['sql_file', 'erm_pdf']);
+
         return response()->json($prenotati, 200);
     }
+
 
     public function prenotaAppello(Request $request)
     {
@@ -414,29 +418,72 @@ class DataRetrievalController extends BaseController
 
     public function caricaEsame(Request $request)
     {
-        $request->validate([
-            'file_sql' => 'nullable|mimes:txt|max:10240',
-            'file_erm' => 'nullable|mimes:pdf|max:20480',
-            'prenotazione_id' => 'required|exists:prenotazione,id',
+        $validator = Validator::make($request->all(), [
+            'file_sql' => 'nullable|file|max:10240',
+            'file_erm' => 'nullable|file|mimes:pdf|max:20480',
+            'prenotazione_id' => 'required|exists:prenotazione,id'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
 
         $prenotazione = Prenotazione::findOrFail($request->prenotazione_id);
 
+
         if ($request->hasFile('file_sql')) {
             $fileSQL = $request->file('file_sql');
-            $prenotazione->file_sql = file_get_contents($fileSQL->getRealPath());
+
+
+            if ($fileSQL->isValid()) {
+                $fileContentSQL = file_get_contents($fileSQL->getRealPath());
+                $prenotazione->sql_file = $fileContentSQL;
+            } else {
+                return response()->json(['error' => 'File SQL non valido.'], 400);
+            }
         }
+
 
         if ($request->hasFile('file_erm')) {
             $fileERM = $request->file('file_erm');
-            $prenotazione->file_erm = file_get_contents($fileERM->getRealPath());
+
+
+            if ($fileERM->isValid()) {
+                $fileContentERM = file_get_contents($fileERM->getRealPath());
+                $prenotazione->erm_pdf = $fileContentERM;
+            } else {
+                return response()->json(['error' => 'File ERM non valido.'], 400);
+            }
         }
 
         $prenotazione->save();
 
-        return response()->json([
-            'message' => 'File salvati con successo!',
-            'status' => 'success'
-        ], 200);
+        return response()->json(['message' => 'File salvati con successo!', 'status' => 'success'], 200);
+    }
+    public function getPrenotazioniPerAppello($appello_id)
+    {
+        $validatedData = Validator::make(['appello_id' => $appello_id], [
+            'appello_id' => 'required|integer|exists:appello,id',
+        ])->validate();
+
+        $prenotazioni = Prenotazione::with('studente')
+            ->where('appello_id', $validatedData['appello_id'])
+            ->get();
+
+        if ($prenotazioni->isEmpty()) {
+            return response()->json(['message' => 'Nessuna prenotazione trovata per questo appello.'], 404);
+        }
+
+        foreach ($prenotazioni as $prenotazione) {
+            if ($prenotazione->sql_file) {
+                $prenotazione->sql_file = base64_encode($prenotazione->sql_file);
+            }
+
+            if ($prenotazione->erm_pdf) {
+                $prenotazione->erm_pdf = base64_encode($prenotazione->erm_pdf);
+            }
+        }
+
+        return response()->json($prenotazioni, 200);
     }
 }

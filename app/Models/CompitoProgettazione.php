@@ -9,7 +9,6 @@ class CompitoProgettazione extends Model
     protected $table = 'compito_progettazione';
     public $timestamps = false;
     public $fillable = [
-        'voto',
         'pdf'
     ];
 

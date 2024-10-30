@@ -33,3 +33,4 @@ Route::post('/invia-Esame', [DataRetrievalController::class, 'inviaEsame']);
 Route::get('/download-file/{appelloId}/{type}', [DataRetrievalController::class, 'downloadFile']);
 Route::post('/fermaEsame', [DataRetrievalController::class, 'fermaEsame']);
 Route::post('/caricaEsame', [DataRetrievalController::class, 'caricaEsame']);
+Route::get('/prenotazioni/{appello_id}', [DataRetrievalController::class, 'getPrenotazioniPerAppello']);
