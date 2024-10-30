@@ -357,7 +357,6 @@ class DataRetrievalController extends BaseController
 
     public function downloadFile($appelloId, $type)
     {
-        // Trova l'appello in base all'ID fornito
         $appello = Appello::find($appelloId);
 
         if (!$appello) {
@@ -367,31 +366,77 @@ class DataRetrievalController extends BaseController
         $fileContent = null;
         $fileName = '';
 
-        // Determina quale tipo di file stai cercando di scaricare
         if ($type === 'SQL') {
             $compitoSQL = CompitoSQL::find($appello->compito_id);
             if ($compitoSQL) {
-                $fileContent = $compitoSQL->pdf; // Contenuto binario del file
-                $fileName = 'esame_sql.pdf'; // Nome del file per il download
+                $fileContent = $compitoSQL->pdf;
+                $fileName = 'esame_sql.pdf';
             }
         } elseif ($type === 'ERM') {
             $compitoProgettazione = CompitoProgettazione::find($appello->compito_id);
             if ($compitoProgettazione) {
-                $fileContent = $compitoProgettazione->pdf; // Contenuto binario del file
-                $fileName = 'esame_erm.pdf'; // Nome del file per il download
+                $fileContent = $compitoProgettazione->pdf;
+                $fileName = 'esame_erm.pdf';
             }
         }
 
-        // Se il contenuto del file è impostato, gestisci il download
         if ($fileContent) {
-            return response()->stream(function () use ($fileContent) {
-                echo $fileContent; // Assicurati che fileContent sia binario e non venga convertito in stringa
-            }, 200, [
+            return response()->streamDownload(function () use ($fileContent) {
+                echo $fileContent;
+            }, $fileName, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ]);
         }
 
         return response()->json(['error' => 'File non trovato.'], 404);
+    }
+
+    public function fermaEsame(Request $request)
+    {
+        $appello = Appello::find($request->input('appelloId'));
+
+        if (!$appello) {
+            return response()->json([
+                'message' => 'Appello non trovato',
+                'status' => 'error'
+            ], 404);
+        }
+
+        $appello->iniziato = false;
+        $appello->save();
+
+        return response()->json([
+            'message' => 'Esame fermato con successo!',
+            'status' => 'success'
+        ], 200);
+    }
+
+    public function caricaEsame(Request $request)
+    {
+        $request->validate([
+            'file_sql' => 'nullable|mimes:txt|max:10240',
+            'file_erm' => 'nullable|mimes:pdf|max:20480',
+            'prenotazione_id' => 'required|exists:prenotazione,id',
+        ]);
+
+        $prenotazione = Prenotazione::findOrFail($request->prenotazione_id);
+
+        if ($request->hasFile('file_sql')) {
+            $fileSQL = $request->file('file_sql');
+            $prenotazione->file_sql = file_get_contents($fileSQL->getRealPath());
+        }
+
+        if ($request->hasFile('file_erm')) {
+            $fileERM = $request->file('file_erm');
+            $prenotazione->file_erm = file_get_contents($fileERM->getRealPath());
+        }
+
+        $prenotazione->save();
+
+        return response()->json([
+            'message' => 'File salvati con successo!',
+            'status' => 'success'
+        ], 200);
     }
 }

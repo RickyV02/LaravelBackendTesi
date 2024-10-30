@@ -13,12 +13,14 @@ class CreatePrenotazioneTable extends Migration
             $table->integer('esito')->nullable();
             $table->foreignId('studente_id')->constrained('studente')->onDelete('cascade');
             $table->foreignId('appello_id')->constrained('appello')->onDelete('cascade');
+            $table->binary('sql_file')->nullable(); 
+            $table->binary('erm_pdf')->nullable(); 
             $table->timestamps();
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('valutazione');
+        Schema::dropIfExists('prenotazione');
     }
 }

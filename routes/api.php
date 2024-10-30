@@ -30,4 +30,6 @@ Route::post('/modificaAppello', [DataRetrievalController::class, 'updateDateAppe
 Route::post('/eliminaAppello', [DataRetrievalController::class, 'deleteAppello']);
 Route::post('/prenotati', [DataRetrievalController::class, 'getPrenotati']);
 Route::post('/invia-Esame', [DataRetrievalController::class, 'inviaEsame']);
-Route::get('/download/{appelloId}/{type}', [DataRetrievalController::class, 'downloadFile']);
+Route::get('/download-file/{appelloId}/{type}', [DataRetrievalController::class, 'downloadFile']);
+Route::post('/fermaEsame', [DataRetrievalController::class, 'fermaEsame']);
+Route::post('/caricaEsame', [DataRetrievalController::class, 'caricaEsame']);
