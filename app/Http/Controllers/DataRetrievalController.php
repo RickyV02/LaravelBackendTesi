@@ -407,7 +407,7 @@ class DataRetrievalController extends BaseController
             ], 404);
         }
 
-        $appello->iniziato = false;
+        $appello->terminato = true;
         $appello->save();
 
         return response()->json([
@@ -430,27 +430,23 @@ class DataRetrievalController extends BaseController
 
         $prenotazione = Prenotazione::findOrFail($request->prenotazione_id);
 
-
         if ($request->hasFile('file_sql')) {
             $fileSQL = $request->file('file_sql');
-
-
             if ($fileSQL->isValid()) {
                 $fileContentSQL = file_get_contents($fileSQL->getRealPath());
                 $prenotazione->sql_file = $fileContentSQL;
+                $prenotazione->ultimo_caricamento_file = now();
             } else {
                 return response()->json(['error' => 'File SQL non valido.'], 400);
             }
         }
 
-
         if ($request->hasFile('file_erm')) {
             $fileERM = $request->file('file_erm');
-
-
             if ($fileERM->isValid()) {
                 $fileContentERM = file_get_contents($fileERM->getRealPath());
                 $prenotazione->erm_pdf = $fileContentERM;
+                $prenotazione->ultimo_caricamento_file = now();
             } else {
                 return response()->json(['error' => 'File ERM non valido.'], 400);
             }
@@ -460,6 +456,7 @@ class DataRetrievalController extends BaseController
 
         return response()->json(['message' => 'File salvati con successo!', 'status' => 'success'], 200);
     }
+
     public function getPrenotazioniPerAppello($appello_id)
     {
         $validatedData = Validator::make(['appello_id' => $appello_id], [
@@ -485,5 +482,74 @@ class DataRetrievalController extends BaseController
         }
 
         return response()->json($prenotazioni, 200);
+    }
+
+    public function getFilesByStudente(Request $request)
+    {
+        $request->validate([
+            'fileType' => 'required|in:sql,erm',
+            'prenotazioneId' => 'required|integer|exists:appello,id',
+            'studenteId' => 'required|integer|exists:studente,id',
+        ]);
+
+        $prenotazione = Prenotazione::where('studente_id', $request->studenteId)
+            ->where('appello_id', $request->prenotazioneId)
+            ->first();
+
+        if (!$prenotazione) {
+            return response()->json(['message' => 'Nessun file trovato per questo studente e prenotazione.'], 404);
+        }
+        if ($request->fileType === 'sql') {
+            $fileContent = $prenotazione->sql_file;
+        } else {
+            $fileContent = $prenotazione->erm_pdf;
+        }
+
+        return response()->json([
+            'id' => $prenotazione->id,
+            'fileContent' => base64_encode($fileContent),
+            'fileName' => $request->fileType === 'sql' ? "file_sql{$request->studenteId}.sql" : "fileerm{$request->studenteId}.pdf",
+        ]);
+    }
+
+    public function uploadEsiti(Request $request)
+    {
+        $request->validate([
+            'studenteId' => 'required|integer|exists:studente,id',
+            'appelloId' => 'required|integer|exists:appello,id',
+            'votoSql' => 'required|integer|min:0|max:30',
+            'votoErm' => 'required|integer|min:0|max:30',
+        ]);
+
+        $prenotazione = Prenotazione::where('studente_id', $request->studenteId)
+            ->where('appello_id', $request->appelloId)
+            ->first();
+
+        if (!$prenotazione) {
+            return response()->json(['message' => 'Prenotazione non trovata per questo studente e appello.'], 404);
+        }
+        $mediaVoti = ($request->votoSql + $request->votoErm) / 2;
+
+        $prenotazione->esito = $mediaVoti;
+        $prenotazione->save();
+
+        return response()->json(['message' => 'Esiti caricati con successo.']);
+    }
+    public function getRisultatiStudente($studenteId)
+    {
+        $risultati = Prenotazione::where('studente_id', $studenteId)
+            ->whereNotNull('esito')
+            ->with(['appello:id,data'])
+            ->get(['id', 'appello_id', 'esito']);
+        $risultatiFormattati = $risultati->map(function ($risultato) {
+            return [
+                'id' => $risultato->id,
+                'appello_id' => $risultato->appello_id,
+                'data_appello' => $risultato->appello->data,
+                'esito' => $risultato->esito,
+            ];
+        });
+
+        return response()->json($risultatiFormattati);
     }
 }

@@ -34,3 +34,6 @@ Route::get('/download-file/{appelloId}/{type}', [DataRetrievalController::class,
 Route::post('/fermaEsame', [DataRetrievalController::class, 'fermaEsame']);
 Route::post('/caricaEsame', [DataRetrievalController::class, 'caricaEsame']);
 Route::get('/prenotazioni/{appello_id}', [DataRetrievalController::class, 'getPrenotazioniPerAppello']);
+Route::post('/downloadStudent', [DataRetrievalController::class, 'getFilesByStudente']);
+Route::post('/uploadEsiti', [DataRetrievalController::class, 'uploadEsiti']);
+Route::get('prenotazioni/terminate/{studenteId}', [DataRetrievalController::class, 'getRisultatiStudente']);

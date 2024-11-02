@@ -14,6 +14,7 @@ class CreateAppelloTable extends Migration
             $table->foreignId('corso_id')->constrained('corso');
             $table->foreignId('compito_id')->nullable()->constrained('testo_compito')->onDelete('cascade');
             $table->boolean('iniziato')->default(false);
+            $table->boolean('terminato')->default(false);
             $table->timestamps();
         });
     }
