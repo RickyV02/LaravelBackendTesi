@@ -10,7 +10,7 @@ class CreateAppelloTable extends Migration
     {
         Schema::create('appello', function (Blueprint $table) {
             $table->id();
-            $table->date('data');
+            $table->datetime('data');
             $table->foreignId('corso_id')->constrained('corso');
             $table->foreignId('compito_id')->nullable()->constrained('testo_compito')->onDelete('cascade');
             $table->boolean('iniziato')->default(false);

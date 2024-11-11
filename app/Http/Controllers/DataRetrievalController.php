@@ -519,20 +519,22 @@ class DataRetrievalController extends BaseController
             'appelloId' => 'required|integer|exists:appello,id',
             'votoSql' => 'required|integer|min:0|max:30',
             'votoErm' => 'required|integer|min:0|max:30',
+            'nota' => 'nullable|string|max:1000',
         ]);
-
+    
         $prenotazione = Prenotazione::where('studente_id', $request->studenteId)
             ->where('appello_id', $request->appelloId)
             ->first();
-
+    
         if (!$prenotazione) {
             return response()->json(['message' => 'Prenotazione non trovata per questo studente e appello.'], 404);
         }
+    
         $mediaVoti = ($request->votoSql + $request->votoErm) / 2;
-
         $prenotazione->esito = $mediaVoti;
+        $prenotazione->note = $request->nota;
         $prenotazione->save();
-
+    
         return response()->json(['message' => 'Esiti caricati con successo.']);
     }
     public function getRisultatiStudente($studenteId)

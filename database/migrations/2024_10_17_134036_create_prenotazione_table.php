@@ -15,6 +15,7 @@ class CreatePrenotazioneTable extends Migration
             $table->foreignId('appello_id')->constrained('appello')->onDelete('cascade');
             $table->binary('sql_file')->nullable();
             $table->binary('erm_pdf')->nullable();
+            $table->text('note')->nullable();
             $table->timestamp('ultimo_caricamento_file')->nullable();
             $table->timestamps();
         });
