@@ -7,6 +7,7 @@ use App\Models\Corso;
 use App\Models\Avvisi;
 use App\Models\Lezione;
 use App\Models\Assegnazione;
+use App\Models\Insegnamento;
 use App\Models\Appello;
 use App\Models\Prenotazione;
 use App\Models\TestoCompito;
@@ -53,9 +54,6 @@ class DataRetrievalController extends BaseController
 
         return response()->json(['message' => 'Lezione creata con successo!'], 201);
     }
-
-
-
     public function nuovoAvviso(Request $request)
     {
         $validatedData = $request->validate([
@@ -74,14 +72,21 @@ class DataRetrievalController extends BaseController
 
     public function nuovoCorso(Request $request)
     {
+
         $validatedData = $request->validate([
             'canale' => 'required|string|max:50',
             'anno' => 'required|date_format:Y',
+            'professore_id' => 'required|exists:professore,id'
         ]);
 
-        Corso::create([
+        $corso = Corso::create([
             'canale' => $validatedData['canale'],
             'anno' => $validatedData['anno']
+        ]);
+
+        Insegnamento::create([
+            'corso_id' => $corso->id,
+            'professore_id' => $validatedData['professore_id']
         ]);
 
         return response()->json(['message' => 'Corso creato con successo!'], 201);
