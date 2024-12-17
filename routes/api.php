@@ -28,6 +28,7 @@ Route::middleware(['web'])->group(function () {
 
         Route::middleware(EnsureStudentOwnsResource::class)->group(function (){
             Route::post('/iscrizioneCorso', [DataRetrievalController::class, 'iscriviStudente']);
+            Route::post('/cancellazioneCorso', [DataRetrievalController::class, 'cancellaIscrizione']);
             Route::post('/caricaEsame', [DataRetrievalController::class, 'caricaEsame']); 
             Route::post('/rimuoviPrenotazione', [DataRetrievalController::class, 'rimuoviPrenotazione']);
             Route::post('/prenotaAppello', [DataRetrievalController::class, 'prenotaAppello']);
@@ -41,7 +42,6 @@ Route::middleware(['web'])->group(function () {
             Route::post('/modificaAppello', [DataRetrievalController::class, 'updateDateAppello']);
             Route::post('/eliminaAppello', [DataRetrievalController::class, 'deleteAppello']);
             Route::post('/fermaEsame', [DataRetrievalController::class, 'fermaEsame']);
-            Route::post('/cancellazioneCorso', [DataRetrievalController::class, 'cancellaIscrizione']);
             Route::post('/uploadEsiti', [DataRetrievalController::class, 'uploadEsiti']);
             Route::post('/prenotati', [DataRetrievalController::class, 'getPrenotati']);
             Route::post('/downloadStudent', [DataRetrievalController::class, 'getFilesByStudente']);
